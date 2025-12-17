@@ -1,12 +1,14 @@
-import express from "express";
-import cors from "cors";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@as-integrations/express4";
-import { typeDefs } from "../graphql/schema";
-import { testDataSource } from "./setup";
-import { SportsArticle } from "../entities/SportsArticle";
+import cors from "cors";
+import express from "express";
 import request from "supertest";
+
+import { SportsArticle } from "../entities/SportsArticle";
 import {createResolvers} from "../graphql/resolvers";
+import { typeDefs } from "../graphql/schema";
+
+import { testDataSource } from "./setup";
 
 export async function setupTestServer() {
   const app = express();
@@ -43,4 +45,6 @@ export async function seedArticles(count: number): Promise<SportsArticle[]> {
 
   return articles;
 }
+
+
 

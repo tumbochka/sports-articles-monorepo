@@ -1,6 +1,7 @@
+import { SportsArticle } from "../entities/SportsArticle";
+
 import { setupTestServer, seedArticles } from "./helpers";
 import { testDataSource } from "./setup";
-import { SportsArticle } from "../entities/SportsArticle";
 
 describe("GraphQL Integration Tests", () => {
   describe("Health Check", () => {
