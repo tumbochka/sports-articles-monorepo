@@ -28,9 +28,28 @@ async function start() {
   app.use("/graphql", expressMiddleware(server));
 
   const port = Number(process.env.PORT ?? 4000);
-  app.listen(port, () => {
+  const httpServer = app.listen(port, () => {
     console.log(`Backend ready on http://localhost:${port}/graphql`);
   });
+
+
+  const shutdown = async (signal: string) => {
+    console.log(`\n${signal} received, shutting down...`);
+
+    try {
+      await server.stop();
+    } catch {}
+
+    try {
+      await AppDataSource.destroy();
+    } catch {}
+
+    await new Promise<void>((resolve) => httpServer?.close(() => resolve()));
+    process.exit(0);
+  };
+
+  process.once("SIGINT", () => void shutdown("SIGINT"));
+  process.once("SIGTERM", () => void shutdown("SIGTERM"));
 }
 
 start().catch((e) => {

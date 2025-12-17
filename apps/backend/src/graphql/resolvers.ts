@@ -37,19 +37,21 @@ export  const resolvers = {
       const repo = AppDataSource.getRepository(SportsArticle);
       const qb = repo
         .createQueryBuilder("a")
-        .where("a.deletedAt IS NULL")
-        .orderBy("a.createdAt", "DESC")
-        .addOrderBy("a.id", "DESC")
+        .orderBy('a.createdAt', 'DESC')
+        .addOrderBy('a.id', 'DESC')
         .take(first + 1);
 
       if (after) {
         qb.andWhere(
-          "(a.createdAt < :createdAt OR (a.createdAt = :createdAt AND a.id < :id))",
-          { createdAt: after.createdAt, id: after.id }
+          '(a.createdAt, a.id) < (:createdAt, :id)',
+          { createdAt: new Date(after.createdAt), id: after.id }
         );
       }
 
       const rows = await qb.getMany();
+
+      console.log("rows.length", rows.length);
+      console.log(qb.getQueryAndParameters());
 
       const hasNextPage = rows.length > first;
       const nodes = hasNextPage ? rows.slice(0, first) : rows;

@@ -19,7 +19,7 @@ export class SportsArticle {
   @Column({ type: "text" })
   content!: string;
 
-  @CreateDateColumn({ type: "timestamptz" })
+  @CreateDateColumn({ type: "timestamptz", precision: 3, default: () => "CURRENT_TIMESTAMP(3)" })
   createdAt!: Date;
 
   @DeleteDateColumn({ type: "timestamptz" })
