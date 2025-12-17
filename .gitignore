@@ -1,0 +1,10 @@
+node_modules
+.env
+.env.local
+dist
+.next
+coverage
+.DS_Store
+
+# DB
+pgdata
