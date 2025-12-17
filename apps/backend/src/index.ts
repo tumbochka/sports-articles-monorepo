@@ -6,7 +6,7 @@ import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@as-integrations/express4";
 import { AppDataSource } from "./data-source";
 import { typeDefs } from  "./graphql/schema"
-import { resolvers} from "./graphql/resolvers";
+import { createResolvers } from "./graphql/resolvers";
 
 
 async function start() {
@@ -14,6 +14,8 @@ async function start() {
 
   app.use(cors());
   app.use(express.json());
+
+  const resolvers = createResolvers(AppDataSource);
 
   const server = new ApolloServer({
     typeDefs,
