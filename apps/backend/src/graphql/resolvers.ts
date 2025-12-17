@@ -2,6 +2,7 @@ import {AppDataSource} from "../data-source";
 import {SportsArticle} from "../entities/SportsArticle";
 import {sportsArticleInputSchema} from "../validation/SportsArticle";
 import {badUserInput, notFound} from "./errors";
+import { decodeCursor, encodeCursor } from "../pagination/cursor";
 
 export  const resolvers = {
   Query: {
@@ -16,6 +17,54 @@ export  const resolvers = {
     article: async (_: unknown, { id }: { id: string }) => {
       const repo = AppDataSource.getRepository(SportsArticle);
       return repo.findOneBy({ id });
+    },
+    articlesConnection: async (
+      _: unknown,
+      args: { first?: number; after?: string | null }
+    ) => {
+      const firstRaw = args.first ?? 10;
+      const first = Math.min(Math.max(firstRaw, 1), 50); // clamp 1..50
+
+      let after: { createdAt: string; id: string } | null = null;
+      if (args.after) {
+        try {
+          after = decodeCursor(args.after);
+        } catch {
+          throw badUserInput("Invalid cursor");
+        }
+      }
+
+      const repo = AppDataSource.getRepository(SportsArticle);
+      const qb = repo
+        .createQueryBuilder("a")
+        .where("a.deletedAt IS NULL")
+        .orderBy("a.createdAt", "DESC")
+        .addOrderBy("a.id", "DESC")
+        .take(first + 1);
+
+      if (after) {
+        qb.andWhere(
+          "(a.createdAt < :createdAt OR (a.createdAt = :createdAt AND a.id < :id))",
+          { createdAt: after.createdAt, id: after.id }
+        );
+      }
+
+      const rows = await qb.getMany();
+
+      const hasNextPage = rows.length > first;
+      const nodes = hasNextPage ? rows.slice(0, first) : rows;
+
+      const edges = nodes.map((node) => ({
+        node,
+        cursor: encodeCursor({ createdAt: node.createdAt.toISOString(), id: node.id }),
+      }));
+
+      const endCursor = edges.length ? edges[edges.length - 1].cursor : null;
+
+      return {
+        edges,
+        pageInfo: { endCursor, hasNextPage },
+      };
     },
   },
   Mutation: {

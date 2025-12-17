@@ -12,17 +12,34 @@ export const typeDefs = /* GraphQL */ `
         health: String!
         articles: [SportsArticle!]!
         article(id: ID!): SportsArticle
+
+        articlesConnection(first: Int = 10, after: String): SportsArticleConnection!
     }
 
-    input ArticleInput {
+    input SportArticleInput {
         title: String!
         content: String!
         imageUrl: String
     }
 
     type Mutation {
-        createArticle(input: ArticleInput!): SportsArticle!
-        updateArticle(id: ID!, input: ArticleInput!): SportsArticle!
+        createArticle(input: SportArticleInput!): SportsArticle!
+        updateArticle(id: ID!, input: SportArticleInput!): SportsArticle!
         deleteArticle(id: ID!): Boolean!
+    }
+
+    type SportsArticleEdge {
+        cursor: String!
+        node: SportsArticle!
+    }
+
+    type PageInfo {
+        endCursor: String
+        hasNextPage: Boolean!
+    }
+
+    type SportsArticleConnection {
+        edges: [SportsArticleEdge!]!
+        pageInfo: PageInfo!
     }
 `;
