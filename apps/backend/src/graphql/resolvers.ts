@@ -1,8 +1,10 @@
-import {SportsArticle} from "../entities/SportsArticle";
-import {sportsArticleInputSchema} from "../validation/SportsArticle";
-import {badUserInput, notFound} from "./errors";
-import { decodeCursor, encodeCursor } from "../pagination/cursor";
 import type {DataSource} from "typeorm";
+
+import {SportsArticle} from "../entities/SportsArticle";
+import { decodeCursor, encodeCursor } from "../pagination/cursor";
+import {sportsArticleInputSchema} from "../validation/SportsArticle";
+
+import {badUserInput, notFound} from "./errors";
 
 export function createResolvers(dataSource: DataSource) {
   return {
@@ -91,7 +93,9 @@ export function createResolvers(dataSource: DataSource) {
         const repo = dataSource.getRepository(SportsArticle);
 
         const existing = await repo.findOne({where: {id}});
-        if (!existing) throw notFound("Article not found");
+        if (!existing) {
+          throw notFound("Article not found");
+        }
 
         repo.merge(existing, parsed.data);
 
@@ -101,7 +105,9 @@ export function createResolvers(dataSource: DataSource) {
         const repo = dataSource.getRepository(SportsArticle);
 
         const existing = await repo.findOne({where: {id}});
-        if (!existing) return false;
+        if (!existing) {
+          return false;
+        }
 
         await repo.softDelete(id);
 

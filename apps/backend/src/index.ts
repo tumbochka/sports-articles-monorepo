@@ -1,12 +1,13 @@
 import "reflect-metadata";
 import "dotenv/config";
-import express from "express";
-import cors from "cors";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@as-integrations/express4";
+import cors from "cors";
+import express from "express";
+
 import { AppDataSource } from "./data-source";
-import { typeDefs } from  "./graphql/schema"
 import { createResolvers } from "./graphql/resolvers";
+import { typeDefs } from  "./graphql/schema"
 
 
 async function start() {
@@ -40,11 +41,15 @@ async function start() {
 
     try {
       await server.stop();
-    } catch {}
+    } catch {
+      // noop
+    }
 
     try {
       await AppDataSource.destroy();
-    } catch {}
+    } catch {
+      // noop
+    }
 
     await new Promise<void>((resolve) => httpServer?.close(() => resolve()));
     process.exit(0);
