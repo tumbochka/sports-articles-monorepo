@@ -1,13 +1,21 @@
-import type {DataSource} from "typeorm";
+import type { DataSource } from "typeorm";
 
-import {SportsArticle} from "../entities/SportsArticle";
+import { SportsArticle } from "../entities/SportsArticle";
 import { decodeCursor, encodeCursor } from "../pagination/cursor";
-import {sportsArticleInputSchema} from "../validation/SportsArticle";
+import { sportsArticleInputSchema } from "../validation/SportsArticle";
 
-import {badUserInput, notFound} from "./errors";
+import { badUserInput, notFound } from "./errors";
 
 export function createResolvers(dataSource: DataSource) {
   return {
+    SportsArticle: {
+      createdAt: (article: SportsArticle) =>
+        article.createdAt.toISOString(),
+      deletedAt: (article: SportsArticle) =>
+        article.deletedAt == null
+          ? null
+          : article.deletedAt.toISOString(),
+    },
     Query: {
       health: () => "ok",
       articles: async () => {

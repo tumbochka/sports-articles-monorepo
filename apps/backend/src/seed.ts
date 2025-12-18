@@ -14,7 +14,7 @@ async function seed() {
     return;
   }
 
-  const items = Array.from({ length: 15 }).map((_, i) => {
+  const items = Array.from({ length: 150 }).map((_, i) => {
     return repo.create({
       title: `Seeded article #${i + 1}`,
       content: `This is the content for seeded article #${i + 1}.`,
