@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class Init1765986166362 implements MigrationInterface {
-    name = 'Init1765986166362'
+export class ChangeCreatedAtPrecision1765986166362 implements MigrationInterface {
+    name = 'ChangeCreatedAtPrecision1765986166362'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`ALTER TABLE "sports_articles" ALTER COLUMN "createdAt" TYPE TIMESTAMP(3) WITH TIME ZONE`);

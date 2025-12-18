@@ -14,7 +14,6 @@ export function createResolvers(dataSource: DataSource) {
         const repo = dataSource.getRepository(SportsArticle);
         return repo.find({
           order: {createdAt: "DESC"},
-          take: 10,
         });
       },
       article: async (_: unknown, {id}: { id: string }) => {
@@ -115,4 +114,4 @@ export function createResolvers(dataSource: DataSource) {
       },
     },
   }
-};
+}

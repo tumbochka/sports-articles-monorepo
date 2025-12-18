@@ -16,15 +16,15 @@ export const typeDefs = /* GraphQL */ `
         articlesConnection(first: Int = 10, after: String): SportsArticleConnection!
     }
 
-    input SportArticleInput {
+    input ArticleInput {
         title: String!
         content: String!
         imageUrl: String
     }
 
     type Mutation {
-        createArticle(input: SportArticleInput!): SportsArticle!
-        updateArticle(id: ID!, input: SportArticleInput!): SportsArticle!
+        createArticle(input: ArticleInput!): SportsArticle!
+        updateArticle(id: ID!, input: ArticleInput!): SportsArticle!
         deleteArticle(id: ID!): Boolean!
     }
 
