@@ -1,6 +1,6 @@
 # Sports Articles Monorepo
 
-This monorepo contains the Sports Articles application. This document covers setup and usage for the backend application.
+This monorepo contains the Sports Articles application. This document covers setup and usage for the backend and frontend applications.
 
 ## Backend
 
@@ -206,3 +206,42 @@ The linter checks TypeScript files for code quality issues, enforces consistent 
 - The backend uses TypeORM for database management with migrations. Database synchronization is disabled (`synchronize: false`), so migrations must be run manually.
 - The GraphQL API is available at `/graphql` endpoint when the backend is running.
 - Make sure PostgreSQL is running and accessible before starting the backend.
+
+## Frontend
+
+The frontend is a Next.js + TypeScript application using Apollo Client for GraphQL and Tailwind CSS for styling.
+
+### Setup
+
+From the repository root, install dependencies using pnpm (if not already done):
+
+```bash
+pnpm install
+```
+
+### Running the Frontend
+
+To start the frontend development server:
+
+```bash
+pnpm --filter frontend dev
+```
+
+By default the frontend runs on port **3000**. Open `http://localhost:3000` in your browser.
+
+### Environment Variables
+
+The frontend uses the following environment variable:
+
+- `NEXT_PUBLIC_GRAPHQL_URL` - URL of the GraphQL backend (default: `http://localhost:4000/graphql`)
+
+You can create an `.env.local` file in `apps/frontend` to override the default:
+
+```bash
+NEXT_PUBLIC_GRAPHQL_URL=http://localhost:4000/graphql
+```
+
+### Node.js Version
+
+Use **Node.js >= 20** (same as the monorepo root `engines` field). The project has been tested with Node.js 22.x.
+
