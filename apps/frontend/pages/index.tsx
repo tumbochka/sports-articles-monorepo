@@ -5,7 +5,9 @@ import { initializeApollo, addApolloState } from "@/lib/apolloClient";
 import { ARTICLES_CONNECTION } from "@/graphql/queries";
 import { DELETE_ARTICLE } from "@/graphql/mutations";
 import { useMutation, useQuery, NetworkStatus } from "@apollo/client";
-import { useEffect, useRef, useCallback } from "react";
+import type { NormalizedCacheObject } from "@apollo/client";
+import { useRef } from "react";
+import { Virtuoso } from "react-virtuoso";
 import { formatDateTime } from "@/lib/formatDate";
 
 const PAGE_SIZE = 10;
@@ -29,6 +31,7 @@ type PageInfo = {
 
 type ArticlesConnectionData = {
   articlesConnection: {
+    __typename?: string;
     edges: ArticlesConnectionEdge[];
     pageInfo: PageInfo;
   };
@@ -39,9 +42,12 @@ type ArticlesConnectionVars = {
   after?: string | null;
 };
 
-type IndexPageProps = Record<string, never>;
+type IndexPageProps = {
+  apolloState?: NormalizedCacheObject;
+};
 
 export default function IndexPage(_: IndexPageProps) {
+  const lastCursorRef = useRef<string | null>(null);
 
   const { data, loading, fetchMore, refetch, networkStatus } = useQuery<
     ArticlesConnectionData,
@@ -50,8 +56,6 @@ export default function IndexPage(_: IndexPageProps) {
     variables: { first: PAGE_SIZE },
     notifyOnNetworkStatusChange: true,
   });
-
-  const isFetchingMore = networkStatus === NetworkStatus.fetchMore;
 
   const [deleteArticle] = useMutation(DELETE_ARTICLE, {
     onError: () => {
@@ -75,80 +79,57 @@ export default function IndexPage(_: IndexPageProps) {
     }
   };
 
-  const lastCursorRef = useRef<string | null>(null);
-
-  const loadMore = useCallback(async () => {
+  const handleEndReached = async () => {
     if (!pageInfo?.hasNextPage || !pageInfo.endCursor) return;
-    if (isFetchingMore) return;
+    if (networkStatus === NetworkStatus.fetchMore) return;
     if (lastCursorRef.current === pageInfo.endCursor) return;
-    lastCursorRef.current = pageInfo.endCursor;
 
+    lastCursorRef.current = pageInfo.endCursor;
     await fetchMore({
-      variables: { first: PAGE_SIZE, after: pageInfo.endCursor },
-      updateQuery: (prev, { fetchMoreResult }) => {
-        if (!fetchMoreResult) return prev;
+      variables: {
+        first: PAGE_SIZE,
+        after: pageInfo.endCursor,
+      },
+      updateQuery: (previousResult, { fetchMoreResult }) => {
+        if (!fetchMoreResult) return previousResult;
         return {
           articlesConnection: {
             ...fetchMoreResult.articlesConnection,
             edges: [
-              ...prev.articlesConnection.edges,
+              ...previousResult.articlesConnection.edges,
               ...fetchMoreResult.articlesConnection.edges,
             ],
           },
         };
       },
     });
-  }, [pageInfo?.hasNextPage, pageInfo?.endCursor, isFetchingMore, fetchMore]);
-
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el) return;
-
-    if (!pageInfo?.hasNextPage) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const first = entries[0];
-        if (first?.isIntersecting) {
-          void loadMore();
-        }
-      },
-      {
-        root: null,
-        rootMargin: "600px",
-        threshold: 0,
-      }
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [loadMore, pageInfo?.hasNextPage]);
+  };
 
   return (
     <Layout title="Articles">
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-xl font-semibold text-slate-900">Latest articles</h1>
-        <Link
-          href="/article/new"
-          className="rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700"
-        >
-          Create article
-        </Link>
       </div>
       {loading && !data ? (
         <p className="text-sm text-slate-600">Loading articles...</p>
       ) : articles.length === 0 ? (
         <p className="text-sm text-slate-600">No articles yet.</p>
       ) : (
-        <>
-          <ul className="space-y-2">
-            {articles.map((article) => (
-              <li
-                key={article.id}
-                className="flex items-center justify-between rounded-md border bg-white px-4 py-3 shadow-sm"
-              >
+        <div className="flex-1 min-h-0">
+          <Virtuoso
+            data={articles}
+            endReached={handleEndReached}
+            style={{ height: "calc(100vh - 160px)" }}
+            components={{
+              Footer: () =>
+                networkStatus === NetworkStatus.fetchMore ? (
+                  <div className="py-3 text-center text-sm text-slate-500">
+                    Loading more...
+                  </div>
+                ) : null,
+            }}
+            itemContent={(_index, article) => (
+              <div className="mb-2 flex items-center justify-between rounded-md border bg-white px-4 py-3 shadow-sm">
                 <div className="flex items-center gap-3">
                   {article.imageUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -188,24 +169,16 @@ export default function IndexPage(_: IndexPageProps) {
                     Delete
                   </button>
                 </div>
-              </li>
-            ))}
-          </ul>
-          <div ref={sentinelRef} className="h-10"/>
-          {pageInfo?.hasNextPage ? (
-            <p className="mt-2 text-sm text-slate-500">
-              {isFetchingMore ? "Loading more..." : "Scroll to load more"}
-            </p>
-          ) : (
-            <p className="mt-2 text-sm text-slate-500">No more articles.</p>
-          )}
-        </>
+              </div>
+            )}
+          />
+        </div>
       )}
     </Layout>
-  );
-}
+      );
+      }
 
-export const getServerSideProps: GetServerSideProps<IndexPageProps> = async () => {
+      export const getServerSideProps: GetServerSideProps<IndexPageProps> = async () => {
   const apolloClient = initializeApollo();
 
   await apolloClient.query<ArticlesConnectionData, ArticlesConnectionVars>({
