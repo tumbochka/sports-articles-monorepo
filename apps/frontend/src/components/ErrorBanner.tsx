@@ -11,5 +11,3 @@ export function ErrorBanner({ message }: ErrorBannerProps) {
     </div>
   );
 }
-
-

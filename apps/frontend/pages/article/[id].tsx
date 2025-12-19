@@ -103,5 +103,3 @@ export const getServerSideProps: GetServerSideProps<ArticlePageProps, Params> = 
     }),
   };
 };
-
-

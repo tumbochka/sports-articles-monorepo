@@ -16,5 +16,3 @@ export function formatDateTime(iso: string): string {
     timeZone: TZ,
   }).format(d);
 }
-
-

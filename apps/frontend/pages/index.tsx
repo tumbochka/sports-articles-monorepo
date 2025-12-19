@@ -1,14 +1,13 @@
 import type { GetServerSideProps } from "next";
-import Link from "next/link";
 import { Layout } from "@/components/Layout";
 import { initializeApollo, addApolloState } from "@/lib/apolloClient";
 import { ARTICLES_CONNECTION } from "@/graphql/queries";
 import { DELETE_ARTICLE } from "@/graphql/mutations";
 import { useMutation, useQuery, NetworkStatus } from "@apollo/client";
 import type { NormalizedCacheObject } from "@apollo/client";
-import { useRef } from "react";
+import { useRef, useCallback } from "react";
 import { Virtuoso } from "react-virtuoso";
-import { formatDateTime } from "@/lib/formatDate";
+import { ArticleRow } from "@/components/ArticleRow";
 
 const PAGE_SIZE = 10;
 
@@ -69,15 +68,18 @@ export default function IndexPage(_: IndexPageProps) {
   const articles: ArticleNode[] = edges.map((edge) => edge.node);
   const pageInfo = data?.articlesConnection.pageInfo;
 
-  const handleDelete = async (id: string) => {
-    // eslint-disable-next-line no-alert
-    const confirmed = window.confirm("Are you sure you want to delete this article?");
-    if (!confirmed) return;
-    const res = await deleteArticle({ variables: { id } });
-    if (res.data?.deleteArticle) {
-      await refetch({ first: PAGE_SIZE, after: null });
-    }
-  };
+  const handleDelete = useCallback(
+    async (id: string) => {
+      // eslint-disable-next-line no-alert
+      const confirmed = window.confirm("Are you sure you want to delete this article?");
+      if (!confirmed) return;
+      const res = await deleteArticle({ variables: { id } });
+      if (res.data?.deleteArticle) {
+        await refetch({ first: PAGE_SIZE, after: null });
+      }
+    },
+    [deleteArticle, refetch]
+  );
 
   const handleEndReached = async () => {
     if (!pageInfo?.hasNextPage || !pageInfo.endCursor) return;
@@ -129,56 +131,16 @@ export default function IndexPage(_: IndexPageProps) {
                 ) : null,
             }}
             itemContent={(_index, article) => (
-              <div className="mb-2 flex items-center justify-between rounded-md border bg-white px-4 py-3 shadow-sm">
-                <div className="flex items-center gap-3">
-                  {article.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={article.imageUrl}
-                      alt=""
-                      loading="lazy"
-                      className="h-12 w-20 rounded object-cover"
-                    />
-                  ) : null}
-                  <div>
-                    <Link
-                      href={`/article/${article.id}`}
-                      className="text-sm font-medium text-slate-900 hover:underline"
-                    >
-                      {article.title}
-                    </Link>
-                    {article.createdAt ? (
-                      <p className="mt-1 text-xs text-slate-500">
-                        {formatDateTime(article.createdAt)}
-                      </p>
-                    ) : null}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 text-xs">
-                  <Link
-                    href={`/article/${article.id}/edit`}
-                    className="rounded-md border border-slate-200 px-2 py-1 text-slate-700 hover:bg-slate-50"
-                  >
-                    Edit
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(article.id)}
-                    className="rounded-md border border-red-200 px-2 py-1 text-red-700 hover:bg-red-50"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
+              <ArticleRow article={article} onDelete={handleDelete} />
             )}
           />
         </div>
       )}
     </Layout>
-      );
-      }
+  );
+}
 
-      export const getServerSideProps: GetServerSideProps<IndexPageProps> = async () => {
+export const getServerSideProps: GetServerSideProps<IndexPageProps> = async () => {
   const apolloClient = initializeApollo();
 
   await apolloClient.query<ArticlesConnectionData, ArticlesConnectionVars>({
@@ -190,5 +152,3 @@ export default function IndexPage(_: IndexPageProps) {
     props: addApolloState(apolloClient, {}),
   };
 };
-
-

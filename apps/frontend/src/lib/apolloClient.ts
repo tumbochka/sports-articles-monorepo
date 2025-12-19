@@ -56,5 +56,3 @@ export function addApolloState(
 export function useApollo(initialState: NormalizedCacheObject | null) {
   return useMemo(() => initializeApollo(initialState), [initialState]);
 }
-
-

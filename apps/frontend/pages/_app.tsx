@@ -12,5 +12,3 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     </ApolloProvider>
   );
 }
-
-

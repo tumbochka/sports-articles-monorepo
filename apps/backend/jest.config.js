@@ -17,6 +17,3 @@ module.exports = {
   testTimeout: 30000,
   watchman: false,
 };
-
-
-

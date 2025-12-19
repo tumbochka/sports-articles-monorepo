@@ -9,7 +9,6 @@ import { AppDataSource } from "./data-source";
 import { createResolvers } from "./graphql/resolvers";
 import { typeDefs } from  "./graphql/schema"
 
-
 async function start() {
   const app = express();
 
@@ -34,7 +33,6 @@ async function start() {
   const httpServer = app.listen(port, () => {
     console.log(`Backend ready on http://localhost:${port}/graphql`);
   });
-
 
   const shutdown = async (signal: string) => {
     console.log(`\n${signal} received, shutting down...`);

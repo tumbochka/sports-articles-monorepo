@@ -244,4 +244,3 @@ NEXT_PUBLIC_GRAPHQL_URL=http://localhost:4000/graphql
 ### Node.js Version
 
 Use **Node.js >= 20** (same as the monorepo root `engines` field). The project has been tested with Node.js 22.x.
-
