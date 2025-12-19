@@ -12,7 +12,7 @@ export function createResolvers(dataSource: DataSource) {
       createdAt: (article: SportsArticle) =>
         article.createdAt.toISOString(),
       deletedAt: (article: SportsArticle) =>
-        article.deletedAt == null
+        article.deletedAt === null
           ? null
           : article.deletedAt.toISOString(),
     },

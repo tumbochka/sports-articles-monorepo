@@ -29,3 +29,4 @@ export const DELETE_ARTICLE = gql`
     deleteArticle(id: $id)
   }
 `;
+

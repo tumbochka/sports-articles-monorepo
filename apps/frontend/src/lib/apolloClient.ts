@@ -1,7 +1,7 @@
 import {ApolloClient, HttpLink, InMemoryCache, NormalizedCacheObject} from "@apollo/client";
 import {useMemo} from "react";
 import merge from "deepmerge";
-import isEqual from "lodash.isequal";
+import isEqual from "fast-deep-equal";
 
 let apolloClient: ApolloClient<NormalizedCacheObject> | null = null;
 

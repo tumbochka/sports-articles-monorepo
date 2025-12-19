@@ -45,3 +45,4 @@ export async function seedArticles(count: number): Promise<SportsArticle[]> {
 
   return articles;
 }
+
