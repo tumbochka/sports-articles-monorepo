@@ -5,7 +5,7 @@ import express from "express";
 import request from "supertest";
 
 import { SportsArticle } from "../entities/SportsArticle";
-import {createResolvers} from "../graphql/resolvers";
+import { createResolvers } from "../graphql/resolvers";
 import { typeDefs } from "../graphql/schema";
 
 import { testDataSource } from "./setup";
@@ -45,5 +45,3 @@ export async function seedArticles(count: number): Promise<SportsArticle[]> {
 
   return articles;
 }
-
-

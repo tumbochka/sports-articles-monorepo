@@ -45,14 +45,14 @@ module.exports = [
       "no-console": "off",
       "no-debugger": "warn",
 
-      "eqeqeq": ["error", "always"],
-      "curly": ["error", "all"],
+      eqeqeq: ["error", "always"],
+      curly: ["error", "all"],
 
       "import/order": [
         "warn",
         {
           "newlines-between": "always",
-          "alphabetize": { order: "asc", caseInsensitive: true },
+          alphabetize: { order: "asc", caseInsensitive: true },
         },
       ],
 

@@ -25,7 +25,10 @@ export default function NewArticlePage() {
       // Check for errors in response
       if (res.errors?.length) {
         const normalized = normalizeApolloError(res.errors);
-        setServerError(normalized[0]?.message || "Failed to create article. Please try again.");
+        setServerError(
+          normalized[0]?.message ||
+            "Failed to create article. Please try again.",
+        );
         return;
       }
 
@@ -34,7 +37,9 @@ export default function NewArticlePage() {
       }
     } catch (err) {
       const normalized = normalizeApolloError(err);
-      setServerError(normalized[0]?.message || "Failed to create article. Please try again.");
+      setServerError(
+        normalized[0]?.message || "Failed to create article. Please try again.",
+      );
     }
   };
 
@@ -46,8 +51,11 @@ export default function NewArticlePage() {
           Fill out the form below to publish a new sports article.
         </p>
       </div>
-      <ArticleForm submitting={loading} serverError={serverError} onSubmit={handleSubmit} />
+      <ArticleForm
+        submitting={loading}
+        serverError={serverError}
+        onSubmit={handleSubmit}
+      />
     </Layout>
   );
 }
-

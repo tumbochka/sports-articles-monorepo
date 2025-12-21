@@ -6,7 +6,7 @@ import {
   from,
 } from "@apollo/client";
 import { onError } from "@apollo/client/link/error";
-import {useMemo} from "react";
+import { useMemo } from "react";
 import merge from "deepmerge";
 import isEqual from "fast-deep-equal";
 
@@ -54,7 +54,9 @@ function createApolloClient() {
   });
 }
 
-export function initializeApollo(initialState: NormalizedCacheObject | null = null) {
+export function initializeApollo(
+  initialState: NormalizedCacheObject | null = null,
+) {
   const _apolloClient = apolloClient ?? createApolloClient();
 
   if (initialState) {
@@ -62,7 +64,9 @@ export function initializeApollo(initialState: NormalizedCacheObject | null = nu
     const data = merge(existingCache, initialState, {
       arrayMerge: (destinationArray, sourceArray) => [
         ...sourceArray,
-        ...destinationArray.filter((d) => sourceArray.every((s) => !isEqual(d, s))),
+        ...destinationArray.filter((d) =>
+          sourceArray.every((s) => !isEqual(d, s)),
+        ),
       ],
     });
     _apolloClient.cache.restore(data);
@@ -81,7 +85,7 @@ export function initializeApollo(initialState: NormalizedCacheObject | null = nu
 
 export function addApolloState<T extends Record<string, unknown>>(
   client: ApolloClient<NormalizedCacheObject>,
-  pageProps: T
+  pageProps: T,
 ): T & { apolloState: NormalizedCacheObject } {
   return {
     ...pageProps,
@@ -92,5 +96,3 @@ export function addApolloState<T extends Record<string, unknown>>(
 export function useApollo(initialState: NormalizedCacheObject | null) {
   return useMemo(() => initializeApollo(initialState), [initialState]);
 }
-
-

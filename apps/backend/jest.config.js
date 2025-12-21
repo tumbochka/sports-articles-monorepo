@@ -1,20 +1,19 @@
 module.exports = {
-  preset: 'ts-jest',
-  testEnvironment: 'node',
-  roots: ['<rootDir>/src'],
-  testMatch: ['**/__tests__/**/*.test.ts'],
+  preset: "ts-jest",
+  testEnvironment: "node",
+  roots: ["<rootDir>/src"],
+  testMatch: ["**/__tests__/**/*.test.ts"],
   collectCoverageFrom: [
-    'src/**/*.ts',
-    '!src/**/*.d.ts',
-    '!src/**/__tests__/**',
-    '!src/migrations/**',
+    "src/**/*.ts",
+    "!src/**/*.d.ts",
+    "!src/**/__tests__/**",
+    "!src/migrations/**",
   ],
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
+  moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json"],
   transform: {
-    '^.+\\.ts$': 'ts-jest',
+    "^.+\\.ts$": "ts-jest",
   },
-  setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup.ts'],
+  setupFilesAfterEnv: ["<rootDir>/src/__tests__/setup.ts"],
   testTimeout: 30000,
   watchman: false,
 };
-

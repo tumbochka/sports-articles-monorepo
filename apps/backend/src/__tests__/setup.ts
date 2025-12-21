@@ -36,7 +36,6 @@ afterAll(async () => {
 beforeEach(async () => {
   // Truncate all tables, keeping the schema
   if (testDataSource?.isInitialized) {
-    await testDataSource.query('TRUNCATE TABLE sports_articles CASCADE');
+    await testDataSource.query("TRUNCATE TABLE sports_articles CASCADE");
   }
 });
-

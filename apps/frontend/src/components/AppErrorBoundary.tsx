@@ -29,13 +29,18 @@ export class AppErrorBoundary extends Component<Props, State> {
       return (
         <div className="flex min-h-screen items-center justify-center bg-slate-50">
           <div className="rounded-md border border-red-200 bg-white p-6 shadow-sm">
-            <h1 className="mb-2 text-lg font-semibold text-slate-900">Something went wrong</h1>
+            <h1 className="mb-2 text-lg font-semibold text-slate-900">
+              Something went wrong
+            </h1>
             <p className="mb-4 text-sm text-slate-600">
-              An unexpected error occurred. Please refresh the page or try again later.
+              An unexpected error occurred. Please refresh the page or try again
+              later.
             </p>
             {process.env.NODE_ENV === "development" && this.state.error && (
               <details className="mt-4">
-                <summary className="cursor-pointer text-xs text-slate-500">Error details</summary>
+                <summary className="cursor-pointer text-xs text-slate-500">
+                  Error details
+                </summary>
                 <pre className="mt-2 overflow-auto rounded bg-slate-100 p-2 text-xs">
                   {this.state.error.toString()}
                 </pre>
@@ -55,4 +60,3 @@ export class AppErrorBoundary extends Component<Props, State> {
     return this.props.children;
   }
 }
-

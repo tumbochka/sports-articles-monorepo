@@ -7,7 +7,7 @@ import express from "express";
 
 import { AppDataSource } from "./data-source";
 import { createResolvers } from "./graphql/resolvers";
-import { typeDefs } from  "./graphql/schema"
+import { typeDefs } from "./graphql/schema";
 
 async function start() {
   const app = express();

@@ -16,6 +16,7 @@ pnpm --filter frontend dev
 ```
 
 Open in browser:
+
 - **Frontend**: http://localhost:3000
 - **GraphQL API**: http://localhost:4000/graphql
 
@@ -93,7 +94,7 @@ From the repository root:
 pnpm --filter backend seed
 ```
 
-The seed script creates 15 sample articles and skips seeding if articles already exist.
+The seed script creates 150 sample articles and skips seeding if articles already exist.
 
 ### Verifying the Backend
 
@@ -159,6 +160,16 @@ pnpm --filter backend dev
 pnpm --filter frontend dev
 ```
 
+### Code Formatting
+
+Format code with Prettier (from repository root):
+
+```bash
+pnpm format
+```
+
+This formats all files in the monorepo according to the project's Prettier configuration.
+
 ### Testing
 
 #### Test Database Setup
@@ -201,6 +212,7 @@ pnpm --filter backend test:watch
 ```
 
 Tests run against an isolated test database and automatically:
+
 - Run all migrations before tests
 - Truncate tables between test cases
 

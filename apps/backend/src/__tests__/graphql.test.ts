@@ -131,8 +131,12 @@ describe("GraphQL Integration Tests", () => {
       expect(secondPageResponse.body.errors).toBeUndefined();
 
       const secondPageData = secondPageResponse.body.data.articlesConnection;
-      const secondPageIds = secondPageData.edges.map((e: { node: SportsArticle }) => e.node.id);
-      const firstPageIds = firstPageData.edges.map((e: { node: SportsArticle }) => e.node.id);
+      const secondPageIds = secondPageData.edges.map(
+        (e: { node: SportsArticle }) => e.node.id,
+      );
+      const firstPageIds = firstPageData.edges.map(
+        (e: { node: SportsArticle }) => e.node.id,
+      );
 
       // Verify no duplicates
       const allIds = [...firstPageIds, ...secondPageIds];
@@ -153,16 +157,20 @@ describe("GraphQL Integration Tests", () => {
 
       if (firstPageArticles.length > 0 && secondPageArticles.length > 0) {
         const firstPageLatestDate = Math.max(
-          ...firstPageArticles.map((a) => a.createdAt.getTime())
+          ...firstPageArticles.map((a) => a.createdAt.getTime()),
         );
         const secondPageLatestDate = Math.max(
-          ...secondPageArticles.map((a) => a.createdAt.getTime())
+          ...secondPageArticles.map((a) => a.createdAt.getTime()),
         );
-        expect(firstPageLatestDate).toBeGreaterThanOrEqual(secondPageLatestDate);
+        expect(firstPageLatestDate).toBeGreaterThanOrEqual(
+          secondPageLatestDate,
+        );
       }
 
       // Verify cursor changes
-      expect(secondPageData.pageInfo.endCursor).not.toBe(firstPageData.pageInfo.endCursor);
+      expect(secondPageData.pageInfo.endCursor).not.toBe(
+        firstPageData.pageInfo.endCursor,
+      );
     });
 
     it("should set hasNextPage to false when on last page", async () => {
@@ -240,7 +248,8 @@ describe("GraphQL Integration Tests", () => {
         .send({ query: initialQuery })
         .expect(200);
 
-      const initialCount = initialResponse.body.data.articlesConnection.edges.length;
+      const initialCount =
+        initialResponse.body.data.articlesConnection.edges.length;
       expect(initialCount).toBe(10);
 
       // Soft delete one article
@@ -266,8 +275,11 @@ describe("GraphQL Integration Tests", () => {
         .send({ query: afterDeleteQuery })
         .expect(200);
 
-      const afterDeleteEdges = afterDeleteResponse.body.data.articlesConnection.edges;
-      const afterDeleteIds = afterDeleteEdges.map((e: { node: SportsArticle }) => e.node.id);
+      const afterDeleteEdges =
+        afterDeleteResponse.body.data.articlesConnection.edges;
+      const afterDeleteIds = afterDeleteEdges.map(
+        (e: { node: SportsArticle }) => e.node.id,
+      );
 
       // Verify deleted article is not in results
       expect(afterDeleteIds).not.toContain(articleToDelete.id);

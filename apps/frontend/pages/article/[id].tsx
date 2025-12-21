@@ -50,7 +50,9 @@ export default function ArticlePage({ article, ssrErrors }: ArticlePageProps) {
     <Layout title={article.title}>
       <article className="space-y-4 rounded-md border bg-white p-4 shadow-sm">
         <header className="space-y-1">
-          <h1 className="text-xl font-semibold text-slate-900">{article.title}</h1>
+          <h1 className="text-xl font-semibold text-slate-900">
+            {article.title}
+          </h1>
           {article.createdAt ? (
             <p className="text-xs text-slate-500">
               Published {formatDateTime(article.createdAt)}
@@ -87,9 +89,10 @@ export default function ArticlePage({ article, ssrErrors }: ArticlePageProps) {
   );
 }
 
-export const getServerSideProps: GetServerSideProps<ArticlePageProps, Params> = async (
-  context
-) => {
+export const getServerSideProps: GetServerSideProps<
+  ArticlePageProps,
+  Params
+> = async (context) => {
   const { id } = context.params as Params;
   const apolloClient = initializeApollo();
 
@@ -103,7 +106,7 @@ export const getServerSideProps: GetServerSideProps<ArticlePageProps, Params> = 
     // Check for NOT_FOUND errors
     if (res.errors?.length) {
       const notFoundError = res.errors.find(
-        (err) => err.extensions?.code === "NOT_FOUND"
+        (err) => err.extensions?.code === "NOT_FOUND",
       );
       if (notFoundError) {
         return {

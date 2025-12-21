@@ -15,10 +15,14 @@ export type NormalizedError = {
  * - Single GraphQLError
  */
 export function normalizeApolloError(
-  errorOrErrors: ApolloError | GraphQLError[] | GraphQLError | Error | unknown
+  errorOrErrors: ApolloError | GraphQLError[] | GraphQLError | Error | unknown,
 ): NormalizedError[] {
   // Handle ApolloError
-  if (errorOrErrors && typeof errorOrErrors === "object" && "graphQLErrors" in errorOrErrors) {
+  if (
+    errorOrErrors &&
+    typeof errorOrErrors === "object" &&
+    "graphQLErrors" in errorOrErrors
+  ) {
     const apolloError = errorOrErrors as ApolloError;
     const errors: NormalizedError[] = [];
 
@@ -67,7 +71,11 @@ export function normalizeApolloError(
   }
 
   // Handle single GraphQLError
-  if (errorOrErrors && typeof errorOrErrors === "object" && "message" in errorOrErrors) {
+  if (
+    errorOrErrors &&
+    typeof errorOrErrors === "object" &&
+    "message" in errorOrErrors
+  ) {
     const err = errorOrErrors as GraphQLError;
     return [
       {
@@ -98,4 +106,3 @@ export function normalizeApolloError(
     },
   ];
 }
-

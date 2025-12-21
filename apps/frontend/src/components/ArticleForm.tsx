@@ -22,10 +22,14 @@ export function ArticleForm({
   const [title, setTitle] = useState(initialValues?.title ?? "");
   const [content, setContent] = useState(initialValues?.content ?? "");
   const [imageUrl, setImageUrl] = useState(initialValues?.imageUrl ?? "");
-  const [touched, setTouched] = useState<{ title?: boolean; content?: boolean }>({});
+  const [touched, setTouched] = useState<{
+    title?: boolean;
+    content?: boolean;
+  }>({});
 
   const titleError = !title.trim() && touched.title ? "Title is required" : "";
-  const contentError = !content.trim() && touched.content ? "Content is required" : "";
+  const contentError =
+    !content.trim() && touched.content ? "Content is required" : "";
   const hasClientErrors = Boolean(titleError || contentError);
 
   const handleSubmit = async (e: FormEvent) => {
@@ -109,4 +113,3 @@ export function ArticleForm({
     </form>
   );
 }
-

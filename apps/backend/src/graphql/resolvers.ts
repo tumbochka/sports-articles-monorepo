@@ -9,28 +9,25 @@ import { badUserInput, notFound } from "./errors";
 export function createResolvers(dataSource: DataSource) {
   return {
     SportsArticle: {
-      createdAt: (article: SportsArticle) =>
-        article.createdAt.toISOString(),
+      createdAt: (article: SportsArticle) => article.createdAt.toISOString(),
       deletedAt: (article: SportsArticle) =>
-        article.deletedAt === null
-          ? null
-          : article.deletedAt.toISOString(),
+        article.deletedAt === null ? null : article.deletedAt.toISOString(),
     },
     Query: {
       health: () => "ok",
       articles: async () => {
         const repo = dataSource.getRepository(SportsArticle);
         return repo.find({
-          order: {createdAt: "DESC"},
+          order: { createdAt: "DESC" },
         });
       },
-      article: async (_: unknown, {id}: { id: string }) => {
+      article: async (_: unknown, { id }: { id: string }) => {
         const repo = dataSource.getRepository(SportsArticle);
-        return repo.findOneBy({id});
+        return repo.findOneBy({ id });
       },
       articlesConnection: async (
         _: unknown,
-        args: { first?: number; after?: string | null }
+        args: { first?: number; after?: string | null },
       ) => {
         const firstRaw = args.first ?? 10;
         const first = Math.min(Math.max(firstRaw, 1), 50); // clamp 1..50
@@ -47,15 +44,15 @@ export function createResolvers(dataSource: DataSource) {
         const repo = dataSource.getRepository(SportsArticle);
         const qb = repo
           .createQueryBuilder("a")
-          .orderBy('a.createdAt', 'DESC')
-          .addOrderBy('a.id', 'DESC')
+          .orderBy("a.createdAt", "DESC")
+          .addOrderBy("a.id", "DESC")
           .take(first + 1);
 
         if (after) {
-          qb.andWhere(
-            '(a.createdAt, a.id) < (:createdAt, :id)',
-            {createdAt: new Date(after.createdAt), id: after.id}
-          );
+          qb.andWhere("(a.createdAt, a.id) < (:createdAt, :id)", {
+            createdAt: new Date(after.createdAt),
+            id: after.id,
+          });
         }
 
         const rows = await qb.getMany();
@@ -65,19 +62,22 @@ export function createResolvers(dataSource: DataSource) {
 
         const edges = nodes.map((node) => ({
           node,
-          cursor: encodeCursor({createdAt: node.createdAt.toISOString(), id: node.id}),
+          cursor: encodeCursor({
+            createdAt: node.createdAt.toISOString(),
+            id: node.id,
+          }),
         }));
 
         const endCursor = edges.length ? edges[edges.length - 1].cursor : null;
 
         return {
           edges,
-          pageInfo: {endCursor, hasNextPage},
+          pageInfo: { endCursor, hasNextPage },
         };
       },
     },
     Mutation: {
-      createArticle: async (_: unknown, {input}: { input: unknown }) => {
+      createArticle: async (_: unknown, { input }: { input: unknown }) => {
         const parsed = sportsArticleInputSchema.safeParse(input);
         if (!parsed.success) {
           throw badUserInput("Validation error", parsed.error.flatten());
@@ -90,7 +90,7 @@ export function createResolvers(dataSource: DataSource) {
       },
       updateArticle: async (
         _: unknown,
-        {id, input}: { id: string; input: unknown }
+        { id, input }: { id: string; input: unknown },
       ) => {
         const parsed = sportsArticleInputSchema.safeParse(input);
         if (!parsed.success) {
@@ -99,7 +99,7 @@ export function createResolvers(dataSource: DataSource) {
 
         const repo = dataSource.getRepository(SportsArticle);
 
-        const existing = await repo.findOne({where: {id}});
+        const existing = await repo.findOne({ where: { id } });
         if (!existing) {
           throw notFound("Article not found");
         }
@@ -108,10 +108,10 @@ export function createResolvers(dataSource: DataSource) {
 
         return repo.save(existing);
       },
-      deleteArticle: async (_: unknown, {id}: { id: string }) => {
+      deleteArticle: async (_: unknown, { id }: { id: string }) => {
         const repo = dataSource.getRepository(SportsArticle);
 
-        const existing = await repo.findOne({where: {id}});
+        const existing = await repo.findOne({ where: { id } });
         if (!existing) {
           return false;
         }
@@ -121,5 +121,5 @@ export function createResolvers(dataSource: DataSource) {
         return true;
       },
     },
-  }
+  };
 }

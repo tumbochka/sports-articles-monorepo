@@ -57,8 +57,7 @@ export const ArticleRow = React.memo<ArticleRowProps>(
         </div>
       </div>
     );
-  }
+  },
 );
 
 ArticleRow.displayName = "ArticleRow";
-

@@ -37,7 +37,9 @@ export default function EditArticlePage({ article, ssrErrors }: EditPageProps) {
     return (
       <Layout title="Error">
         <ErrorBanner errors={ssrErrors} />
-        <p className="text-sm text-slate-600">Unable to load article for editing.</p>
+        <p className="text-sm text-slate-600">
+          Unable to load article for editing.
+        </p>
       </Layout>
     );
   }
@@ -64,7 +66,10 @@ export default function EditArticlePage({ article, ssrErrors }: EditPageProps) {
       // Check for errors in response
       if (res.errors?.length) {
         const normalized = normalizeApolloError(res.errors);
-        setServerError(normalized[0]?.message || "Failed to update article. Please try again.");
+        setServerError(
+          normalized[0]?.message ||
+            "Failed to update article. Please try again.",
+        );
         return;
       }
 
@@ -73,7 +78,9 @@ export default function EditArticlePage({ article, ssrErrors }: EditPageProps) {
       }
     } catch (err) {
       const normalized = normalizeApolloError(err);
-      setServerError(normalized[0]?.message || "Failed to update article. Please try again.");
+      setServerError(
+        normalized[0]?.message || "Failed to update article. Please try again.",
+      );
     }
   };
 
@@ -82,7 +89,8 @@ export default function EditArticlePage({ article, ssrErrors }: EditPageProps) {
       <div className="mb-4">
         <h1 className="text-xl font-semibold text-slate-900">Edit article</h1>
         <p className="mt-1 text-sm text-slate-600">
-          Make changes to your article. All fields are required except the image URL.
+          Make changes to your article. All fields are required except the image
+          URL.
         </p>
       </div>
       <ArticleForm
@@ -99,9 +107,10 @@ export default function EditArticlePage({ article, ssrErrors }: EditPageProps) {
   );
 }
 
-export const getServerSideProps: GetServerSideProps<EditPageProps, Params> = async (
-  context
-) => {
+export const getServerSideProps: GetServerSideProps<
+  EditPageProps,
+  Params
+> = async (context) => {
   const { id } = context.params as Params;
   const apolloClient = initializeApollo();
 
@@ -115,7 +124,7 @@ export const getServerSideProps: GetServerSideProps<EditPageProps, Params> = asy
     // Check for NOT_FOUND errors
     if (res.errors?.length) {
       const notFoundError = res.errors.find(
-        (err) => err.extensions?.code === "NOT_FOUND"
+        (err) => err.extensions?.code === "NOT_FOUND",
       );
       if (notFoundError) {
         return {
@@ -167,4 +176,3 @@ export const getServerSideProps: GetServerSideProps<EditPageProps, Params> = asy
     };
   }
 };
-

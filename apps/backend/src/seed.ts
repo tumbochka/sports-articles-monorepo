@@ -1,6 +1,6 @@
 import "dotenv/config";
-import {AppDataSource} from "./data-source";
-import {SportsArticle} from "./entities/SportsArticle";
+import { AppDataSource } from "./data-source";
+import { SportsArticle } from "./entities/SportsArticle";
 
 async function seed() {
   await AppDataSource.initialize();
@@ -18,7 +18,8 @@ async function seed() {
     return repo.create({
       title: `Seeded article #${i + 1}`,
       content: `This is the content for seeded article #${i + 1}.`,
-      imageUrl: i % 3 === 0 ? `https://picsum.photos/seed/${i + 1}/800/400` : null,
+      imageUrl:
+        i % 3 === 0 ? `https://picsum.photos/seed/${i + 1}/800/400` : null,
       deletedAt: null,
     });
   });

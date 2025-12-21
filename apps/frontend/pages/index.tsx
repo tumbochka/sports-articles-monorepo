@@ -76,7 +76,9 @@ export default function IndexPage({ ssrErrors }: IndexPageProps) {
   const handleDelete = useCallback(
     async (id: string) => {
       // eslint-disable-next-line no-alert
-      const confirmed = window.confirm("Are you sure you want to delete this article?");
+      const confirmed = window.confirm(
+        "Are you sure you want to delete this article?",
+      );
       if (!confirmed) return;
       try {
         const res = await deleteArticle({
@@ -87,7 +89,10 @@ export default function IndexPage({ ssrErrors }: IndexPageProps) {
         if (res.errors?.length) {
           const normalized = normalizeApolloError(res.errors);
           // eslint-disable-next-line no-alert
-          alert(normalized[0]?.message || "Failed to delete article. Please try again.");
+          alert(
+            normalized[0]?.message ||
+              "Failed to delete article. Please try again.",
+          );
           return;
         }
         if (res.data?.deleteArticle) {
@@ -96,10 +101,13 @@ export default function IndexPage({ ssrErrors }: IndexPageProps) {
       } catch (err) {
         const normalized = normalizeApolloError(err);
         // eslint-disable-next-line no-alert
-        alert(normalized[0]?.message || "Failed to delete article. Please try again.");
+        alert(
+          normalized[0]?.message ||
+            "Failed to delete article. Please try again.",
+        );
       }
     },
-    [deleteArticle, refetch]
+    [deleteArticle, refetch],
   );
 
   const handleEndReached = async () => {
@@ -128,12 +136,15 @@ export default function IndexPage({ ssrErrors }: IndexPageProps) {
     });
   };
 
-  const displayErrors = ssrErrors || (error ? normalizeApolloError(error) : null);
+  const displayErrors =
+    ssrErrors || (error ? normalizeApolloError(error) : null);
 
   return (
     <Layout title="Articles">
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-slate-900">Latest articles</h1>
+        <h1 className="text-xl font-semibold text-slate-900">
+          Latest articles
+        </h1>
       </div>
       {displayErrors ? <ErrorBanner errors={displayErrors} /> : null}
       {loading && !data ? (
@@ -164,11 +175,16 @@ export default function IndexPage({ ssrErrors }: IndexPageProps) {
   );
 }
 
-export const getServerSideProps: GetServerSideProps<IndexPageProps> = async () => {
+export const getServerSideProps: GetServerSideProps<
+  IndexPageProps
+> = async () => {
   const apolloClient = initializeApollo();
 
   try {
-    const res = await apolloClient.query<ArticlesConnectionData, ArticlesConnectionVars>({
+    const res = await apolloClient.query<
+      ArticlesConnectionData,
+      ArticlesConnectionVars
+    >({
       query: ARTICLES_CONNECTION,
       variables: { first: PAGE_SIZE },
       errorPolicy: "all",

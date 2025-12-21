@@ -44,11 +44,13 @@ export function Layout({ title, children }: LayoutProps) {
         <footer className="border-t bg-white">
           <div className="mx-auto max-w-5xl px-4 py-3 text-xs text-slate-500">
             GraphQL backend:{" "}
-            <code>{process.env.NEXT_PUBLIC_GRAPHQL_URL ?? "http://localhost:4000/graphql"}</code>
+            <code>
+              {process.env.NEXT_PUBLIC_GRAPHQL_URL ??
+                "http://localhost:4000/graphql"}
+            </code>
           </div>
         </footer>
       </div>
     </>
   );
 }
-
