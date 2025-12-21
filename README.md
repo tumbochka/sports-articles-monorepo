@@ -11,8 +11,15 @@ pnpm install
 docker compose up -d
 pnpm --filter backend migration:run
 pnpm --filter backend seed
+```
+Run backend and frontend in separate terminals:
+```bash
 pnpm --filter backend dev
 pnpm --filter frontend dev
+```
+Or in one terminal:
+```bash
+pnpm dev
 ```
 
 Open in browser:
@@ -59,7 +66,9 @@ docker ps
 
 ## Backend
 
-GraphQL API built with Node.js, Express, Apollo Server, TypeORM, and PostgreSQL.
+GraphQL API built with Node.js, Express, Apollo Server, TypeORM, and PostgreSQL. The GraphQL API supports cursor-based pagination, soft deletes, and typed errors
+(BAD_USER_INPUT, NOT_FOUND) for predictable client-side handling.
+
 
 ### Environment Variables
 
@@ -140,6 +149,12 @@ To verify SSR:
 - **Read**: Open article from list → view article details page
 - **Update**: Click "Edit" on article → modify form → submit → redirected to article details with changes persisted
 - **Delete**: Click "Delete" on article → confirm in dialog → article removed from list
+
+## Error Handling
+
+- Backend returns typed GraphQL errors (`BAD_USER_INPUT`, `NOT_FOUND`)
+- Frontend handles GraphQL and network errors without triggering Next.js runtime overlay
+- Validation and server errors are displayed inline in the UI
 
 ## Useful Commands
 
