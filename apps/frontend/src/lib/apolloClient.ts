@@ -31,7 +31,10 @@ function createApolloClient() {
     if (networkError) {
       console.warn("[Network error]", {
         op: operation.operationName,
-        message: (networkError as any)?.message ?? String(networkError),
+        message:
+          networkError instanceof Error
+            ? networkError.message
+            : String(networkError),
       });
     }
   });

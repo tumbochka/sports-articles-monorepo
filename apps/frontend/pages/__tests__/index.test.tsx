@@ -2,6 +2,7 @@ import React, { act } from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MockedProvider } from "@apollo/client/testing";
+import type { NormalizedCacheObject } from "@apollo/client";
 import IndexPage from "../index";
 import { ARTICLES_CONNECTION } from "@/graphql/queries";
 import { DELETE_ARTICLE } from "@/graphql/mutations";
@@ -36,10 +37,18 @@ let endReachedCallback: (() => void) | null = null;
 jest.mock("react-virtuoso", () => {
   const React = require("react");
   return {
-    Virtuoso: ({ data, endReached, itemContent }: any) => {
+    Virtuoso: ({
+      data,
+      endReached,
+      itemContent,
+    }: {
+      data?: unknown[];
+      endReached?: () => void;
+      itemContent: (index: number, item: unknown) => React.ReactNode;
+    }) => {
       // Store the endReached callback so we can call it manually in tests
       React.useEffect(() => {
-        endReachedCallback = endReached;
+        endReachedCallback = endReached ?? null;
       }, [endReached]);
 
       // Sync items with data prop (which updates when Apollo's updateQuery runs)
@@ -47,8 +56,15 @@ jest.mock("react-virtuoso", () => {
 
       return (
         <div data-testid="virtuoso-list">
-          {items.map((item: any, index: number) => (
-            <div key={item.id || index} data-testid={`virtuoso-item-${index}`}>
+          {items.map((item: unknown, index: number) => (
+            <div
+              key={
+                (item && typeof item === "object" && "id" in item
+                  ? String(item.id)
+                  : null) || index
+              }
+              data-testid={`virtuoso-item-${index}`}
+            >
               {itemContent(index, item)}
             </div>
           ))}
@@ -156,7 +172,7 @@ describe("IndexPage", () => {
 
       render(
         <MockedProvider mocks={mocks}>
-          <IndexPage />
+          <IndexPage apolloState={{}} ssrErrors={null} />
         </MockedProvider>,
       );
 
@@ -248,7 +264,7 @@ describe("IndexPage", () => {
 
       render(
         <MockedProvider mocks={mocks}>
-          <IndexPage />
+          <IndexPage apolloState={{}} ssrErrors={null} />
         </MockedProvider>,
       );
 
@@ -311,7 +327,7 @@ describe("IndexPage", () => {
 
       render(
         <MockedProvider mocks={mocks}>
-          <IndexPage />
+          <IndexPage apolloState={{}} ssrErrors={null} />
         </MockedProvider>,
       );
 

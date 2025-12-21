@@ -41,8 +41,8 @@ export function normalizeApolloError(
     if (apolloError.networkError) {
       errors.push({
         message:
-          (apolloError.networkError as any)?.message ??
-          apolloError.networkError.toString() ??
+          apolloError.networkError?.message ??
+          apolloError.networkError?.toString() ??
           "Network error occurred",
         code: "NETWORK_ERROR",
         field: null,

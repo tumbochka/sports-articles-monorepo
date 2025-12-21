@@ -44,8 +44,8 @@ type ArticlesConnectionVars = {
 };
 
 type IndexPageProps = {
-  apolloState?: NormalizedCacheObject;
-  ssrErrors?: ReturnType<typeof normalizeApolloError>;
+  apolloState: NormalizedCacheObject;
+  ssrErrors: ReturnType<typeof normalizeApolloError> | null;
 };
 
 export default function IndexPage({ ssrErrors }: IndexPageProps) {
