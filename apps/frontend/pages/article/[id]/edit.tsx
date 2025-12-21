@@ -8,6 +8,8 @@ import { ArticleForm, ArticleFormValues } from "@/components/ArticleForm";
 import { initializeApollo, addApolloState } from "@/lib/apolloClient";
 import { ARTICLE } from "@/graphql/queries";
 import { UPDATE_ARTICLE } from "@/graphql/mutations";
+import { normalizeApolloError } from "@/lib/normalizeApolloError";
+import { ErrorBanner } from "@/components/ErrorBanner";
 
 type EditPageProps = {
   article: {
@@ -16,17 +18,29 @@ type EditPageProps = {
     content: string;
     imageUrl?: string | null;
   } | null;
+  ssrErrors?: ReturnType<typeof normalizeApolloError>;
 };
 
 interface Params extends ParsedUrlQuery {
   id: string;
 }
 
-export default function EditArticlePage({ article }: EditPageProps) {
+export default function EditArticlePage({ article, ssrErrors }: EditPageProps) {
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
 
-  const [updateArticle, { loading }] = useMutation(UPDATE_ARTICLE);
+  const [updateArticle, { loading }] = useMutation(UPDATE_ARTICLE, {
+    errorPolicy: "all",
+  });
+
+  if (ssrErrors) {
+    return (
+      <Layout title="Error">
+        <ErrorBanner errors={ssrErrors} />
+        <p className="text-sm text-slate-600">Unable to load article for editing.</p>
+      </Layout>
+    );
+  }
 
   if (!article) {
     return (
@@ -39,22 +53,27 @@ export default function EditArticlePage({ article }: EditPageProps) {
   const handleSubmit = async (values: ArticleFormValues) => {
     setServerError(null);
     try {
-      const { data } = await updateArticle({
+      const res = await updateArticle({
         variables: {
           id: article.id,
           input: values,
         },
+        errorPolicy: "all",
       });
 
-      if (data?.updateArticle?.id) {
-        await router.push(`/article/${data.updateArticle.id}`);
+      // Check for errors in response
+      if (res.errors?.length) {
+        const normalized = normalizeApolloError(res.errors);
+        setServerError(normalized[0]?.message || "Failed to update article. Please try again.");
+        return;
       }
-    } catch (err: any) {
-      const message =
-        err?.graphQLErrors?.[0]?.message ??
-        err?.message ??
-        "Failed to update article. Please try again.";
-      setServerError(message);
+
+      if (res.data?.updateArticle?.id) {
+        await router.push(`/article/${res.data.updateArticle.id}`);
+      }
+    } catch (err) {
+      const normalized = normalizeApolloError(err);
+      setServerError(normalized[0]?.message || "Failed to update article. Please try again.");
     }
   };
 
@@ -86,29 +105,66 @@ export const getServerSideProps: GetServerSideProps<EditPageProps, Params> = asy
   const { id } = context.params as Params;
   const apolloClient = initializeApollo();
 
-  const { data } = await apolloClient.query({
-    query: ARTICLE,
-    variables: { id },
-  });
+  try {
+    const res = await apolloClient.query({
+      query: ARTICLE,
+      variables: { id },
+      errorPolicy: "all",
+    });
 
-  const article = data.article
-    ? {
-        id: data.article.id,
-        title: data.article.title,
-        content: data.article.content,
-        imageUrl: data.article.imageUrl ?? null,
+    // Check for NOT_FOUND errors
+    if (res.errors?.length) {
+      const notFoundError = res.errors.find(
+        (err) => err.extensions?.code === "NOT_FOUND"
+      );
+      if (notFoundError) {
+        return {
+          notFound: true,
+        };
       }
-    : null;
+      // Other errors - return with ssrErrors
+      return {
+        props: addApolloState(apolloClient, {
+          article: null,
+          ssrErrors: normalizeApolloError(res.errors),
+        }),
+      };
+    }
 
-  if (!article) {
+    const article = res.data?.article
+      ? {
+          id: res.data.article.id,
+          title: res.data.article.title,
+          content: res.data.article.content,
+          imageUrl: res.data.article.imageUrl ?? null,
+        }
+      : null;
+
+    if (!article) {
+      return {
+        notFound: true,
+      };
+    }
+
     return {
-      notFound: true,
+      props: addApolloState(apolloClient, {
+        article,
+      }),
+    };
+  } catch (e) {
+    const normalized = normalizeApolloError(e);
+    const notFoundError = normalized.find((err) => err.code === "NOT_FOUND");
+    if (notFoundError) {
+      return {
+        notFound: true,
+      };
+    }
+    return {
+      props: addApolloState(apolloClient, {
+        article: null,
+        ssrErrors: normalized,
+      }),
     };
   }
-
-  return {
-    props: addApolloState(apolloClient, {
-      article,
-    }),
-  };
 };
+

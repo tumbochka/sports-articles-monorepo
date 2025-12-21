@@ -5,6 +5,8 @@ import { Layout } from "@/components/Layout";
 import { initializeApollo, addApolloState } from "@/lib/apolloClient";
 import { ARTICLE } from "@/graphql/queries";
 import { formatDateTime } from "@/lib/formatDate";
+import { normalizeApolloError } from "@/lib/normalizeApolloError";
+import { ErrorBanner } from "@/components/ErrorBanner";
 
 type ArticlePageProps = {
   article: {
@@ -14,13 +16,28 @@ type ArticlePageProps = {
     createdAt: string | null;
     imageUrl?: string | null;
   } | null;
+  ssrErrors?: ReturnType<typeof normalizeApolloError>;
 };
 
 interface Params extends ParsedUrlQuery {
   id: string;
 }
 
-export default function ArticlePage({ article }: ArticlePageProps) {
+export default function ArticlePage({ article, ssrErrors }: ArticlePageProps) {
+  if (ssrErrors) {
+    return (
+      <Layout title="Error">
+        <ErrorBanner errors={ssrErrors} />
+        <Link
+          href="/"
+          className="text-sm text-blue-600 hover:text-blue-700 hover:underline"
+        >
+          ← Back to list
+        </Link>
+      </Layout>
+    );
+  }
+
   if (!article) {
     return (
       <Layout title="Article not found">
@@ -76,30 +93,66 @@ export const getServerSideProps: GetServerSideProps<ArticlePageProps, Params> = 
   const { id } = context.params as Params;
   const apolloClient = initializeApollo();
 
-  const { data } = await apolloClient.query({
-    query: ARTICLE,
-    variables: { id },
-  });
+  try {
+    const res = await apolloClient.query({
+      query: ARTICLE,
+      variables: { id },
+      errorPolicy: "all",
+    });
 
-  const article = data.article
-    ? {
-        id: data.article.id,
-        title: data.article.title,
-        content: data.article.content,
-        createdAt: data.article.createdAt ?? null,
-        imageUrl: data.article.imageUrl ?? null,
+    // Check for NOT_FOUND errors
+    if (res.errors?.length) {
+      const notFoundError = res.errors.find(
+        (err) => err.extensions?.code === "NOT_FOUND"
+      );
+      if (notFoundError) {
+        return {
+          notFound: true,
+        };
       }
-    : null;
+      // Other errors - return with ssrErrors
+      return {
+        props: addApolloState(apolloClient, {
+          article: null,
+          ssrErrors: normalizeApolloError(res.errors),
+        }),
+      };
+    }
 
-  if (!article) {
+    const article = res.data?.article
+      ? {
+          id: res.data.article.id,
+          title: res.data.article.title,
+          content: res.data.article.content,
+          createdAt: res.data.article.createdAt ?? null,
+          imageUrl: res.data.article.imageUrl ?? null,
+        }
+      : null;
+
+    if (!article) {
+      return {
+        notFound: true,
+      };
+    }
+
     return {
-      notFound: true,
+      props: addApolloState(apolloClient, {
+        article,
+      }),
+    };
+  } catch (e) {
+    const normalized = normalizeApolloError(e);
+    const notFoundError = normalized.find((err) => err.code === "NOT_FOUND");
+    if (notFoundError) {
+      return {
+        notFound: true,
+      };
+    }
+    return {
+      props: addApolloState(apolloClient, {
+        article: null,
+        ssrErrors: normalized,
+      }),
     };
   }
-
-  return {
-    props: addApolloState(apolloClient, {
-      article,
-    }),
-  };
 };

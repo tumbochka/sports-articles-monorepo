@@ -4,29 +4,37 @@ import { useMutation } from "@apollo/client";
 import { Layout } from "@/components/Layout";
 import { ArticleForm, ArticleFormValues } from "@/components/ArticleForm";
 import { CREATE_ARTICLE } from "@/graphql/mutations";
+import { normalizeApolloError } from "@/lib/normalizeApolloError";
 
 export default function NewArticlePage() {
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
 
-  const [createArticle, { loading }] = useMutation(CREATE_ARTICLE);
+  const [createArticle, { loading }] = useMutation(CREATE_ARTICLE, {
+    errorPolicy: "all",
+  });
 
   const handleSubmit = async (values: ArticleFormValues) => {
     setServerError(null);
     try {
-      const { data } = await createArticle({
+      const res = await createArticle({
         variables: { input: values },
+        errorPolicy: "all",
       });
 
-      if (data?.createArticle?.id) {
-        await router.push(`/article/${data.createArticle.id}`);
+      // Check for errors in response
+      if (res.errors?.length) {
+        const normalized = normalizeApolloError(res.errors);
+        setServerError(normalized[0]?.message || "Failed to create article. Please try again.");
+        return;
       }
-    } catch (err: any) {
-      const message =
-        err?.graphQLErrors?.[0]?.message ??
-        err?.message ??
-        "Failed to create article. Please try again.";
-      setServerError(message);
+
+      if (res.data?.createArticle?.id) {
+        await router.push(`/article/${res.data.createArticle.id}`);
+      }
+    } catch (err) {
+      const normalized = normalizeApolloError(err);
+      setServerError(normalized[0]?.message || "Failed to create article. Please try again.");
     }
   };
 
@@ -42,3 +50,4 @@ export default function NewArticlePage() {
     </Layout>
   );
 }
+

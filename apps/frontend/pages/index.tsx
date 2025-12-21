@@ -8,6 +8,8 @@ import type { NormalizedCacheObject } from "@apollo/client";
 import { useRef, useCallback } from "react";
 import { Virtuoso } from "react-virtuoso";
 import { ArticleRow } from "@/components/ArticleRow";
+import { normalizeApolloError } from "@/lib/normalizeApolloError";
+import { ErrorBanner } from "@/components/ErrorBanner";
 
 const PAGE_SIZE = 10;
 
@@ -43,20 +45,23 @@ type ArticlesConnectionVars = {
 
 type IndexPageProps = {
   apolloState?: NormalizedCacheObject;
+  ssrErrors?: ReturnType<typeof normalizeApolloError>;
 };
 
-export default function IndexPage(_: IndexPageProps) {
+export default function IndexPage({ ssrErrors }: IndexPageProps) {
   const lastCursorRef = useRef<string | null>(null);
 
-  const { data, loading, fetchMore, refetch, networkStatus } = useQuery<
+  const { data, loading, error, fetchMore, refetch, networkStatus } = useQuery<
     ArticlesConnectionData,
     ArticlesConnectionVars
   >(ARTICLES_CONNECTION, {
     variables: { first: PAGE_SIZE },
     notifyOnNetworkStatusChange: true,
+    errorPolicy: "all",
   });
 
   const [deleteArticle] = useMutation(DELETE_ARTICLE, {
+    errorPolicy: "all",
     onError: () => {
       // Keep UI simple: just alert, no persistent banner
       // eslint-disable-next-line no-alert
@@ -73,9 +78,25 @@ export default function IndexPage(_: IndexPageProps) {
       // eslint-disable-next-line no-alert
       const confirmed = window.confirm("Are you sure you want to delete this article?");
       if (!confirmed) return;
-      const res = await deleteArticle({ variables: { id } });
-      if (res.data?.deleteArticle) {
-        await refetch({ first: PAGE_SIZE, after: null });
+      try {
+        const res = await deleteArticle({
+          variables: { id },
+          errorPolicy: "all",
+        });
+        // Check for errors in response
+        if (res.errors?.length) {
+          const normalized = normalizeApolloError(res.errors);
+          // eslint-disable-next-line no-alert
+          alert(normalized[0]?.message || "Failed to delete article. Please try again.");
+          return;
+        }
+        if (res.data?.deleteArticle) {
+          await refetch({ first: PAGE_SIZE, after: null });
+        }
+      } catch (err) {
+        const normalized = normalizeApolloError(err);
+        // eslint-disable-next-line no-alert
+        alert(normalized[0]?.message || "Failed to delete article. Please try again.");
       }
     },
     [deleteArticle, refetch]
@@ -107,11 +128,14 @@ export default function IndexPage(_: IndexPageProps) {
     });
   };
 
+  const displayErrors = ssrErrors || (error ? normalizeApolloError(error) : null);
+
   return (
     <Layout title="Articles">
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-xl font-semibold text-slate-900">Latest articles</h1>
       </div>
+      {displayErrors ? <ErrorBanner errors={displayErrors} /> : null}
       {loading && !data ? (
         <p className="text-sm text-slate-600">Loading articles...</p>
       ) : articles.length === 0 ? (
@@ -143,12 +167,23 @@ export default function IndexPage(_: IndexPageProps) {
 export const getServerSideProps: GetServerSideProps<IndexPageProps> = async () => {
   const apolloClient = initializeApollo();
 
-  await apolloClient.query<ArticlesConnectionData, ArticlesConnectionVars>({
-    query: ARTICLES_CONNECTION,
-    variables: { first: PAGE_SIZE },
-  });
+  try {
+    const res = await apolloClient.query<ArticlesConnectionData, ArticlesConnectionVars>({
+      query: ARTICLES_CONNECTION,
+      variables: { first: PAGE_SIZE },
+      errorPolicy: "all",
+    });
 
-  return {
-    props: addApolloState(apolloClient, {}),
-  };
+    return {
+      props: addApolloState(apolloClient, {
+        ssrErrors: res.errors ? normalizeApolloError(res.errors) : null,
+      }),
+    };
+  } catch (e) {
+    return {
+      props: addApolloState(apolloClient, {
+        ssrErrors: normalizeApolloError(e),
+      }),
+    };
+  }
 };

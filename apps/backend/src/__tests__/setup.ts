@@ -39,3 +39,4 @@ beforeEach(async () => {
     await testDataSource.query('TRUNCATE TABLE sports_articles CASCADE');
   }
 });
+

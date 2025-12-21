@@ -61,3 +61,4 @@ export const ArticleRow = React.memo<ArticleRowProps>(
 );
 
 ArticleRow.displayName = "ArticleRow";
+

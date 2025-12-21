@@ -1,4 +1,11 @@
-import {ApolloClient, HttpLink, InMemoryCache, NormalizedCacheObject} from "@apollo/client";
+import {
+  ApolloClient,
+  HttpLink,
+  InMemoryCache,
+  NormalizedCacheObject,
+  from,
+} from "@apollo/client";
+import { onError } from "@apollo/client/link/error";
 import {useMemo} from "react";
 import merge from "deepmerge";
 import isEqual from "fast-deep-equal";
@@ -6,15 +13,44 @@ import isEqual from "fast-deep-equal";
 let apolloClient: ApolloClient<NormalizedCacheObject> | null = null;
 
 function createApolloClient() {
-  const uri = process.env.NEXT_PUBLIC_GRAPHQL_URL ?? "http://localhost:4000/graphql";
+  const uri =
+    process.env.NEXT_PUBLIC_GRAPHQL_URL ?? "http://localhost:4000/graphql";
 
-  return new ApolloClient({
+  const errorLink = onError(({ graphQLErrors, networkError, operation }) => {
+    if (graphQLErrors?.length) {
+      for (const err of graphQLErrors) {
+        // лог для дебага; пізніше можна toast / sentry
+        console.warn("[GraphQL error]", {
+          op: operation.operationName,
+          message: err.message,
+          code: err.extensions?.code,
+          field: err.extensions?.field,
+        });
+      }
+    }
+    if (networkError) {
+      console.warn("[Network error]", {
+        op: operation.operationName,
+        message: (networkError as any)?.message ?? String(networkError),
+      });
+    }
+  });
+
+  const httpLink = new HttpLink({
+    uri,
+    fetch,
+  });
+
+  return new ApolloClient<NormalizedCacheObject>({
     ssrMode: typeof window === "undefined",
-    link: new HttpLink({
-      uri,
-      fetch,
-    }),
+    link: from([errorLink, httpLink]),
     cache: new InMemoryCache(),
+    defaultOptions: {
+      // ключове: не кидати виняток на GraphQL errors
+      query: { errorPolicy: "all" },
+      watchQuery: { errorPolicy: "all" },
+      mutate: { errorPolicy: "all" },
+    },
   });
 }
 
@@ -43,10 +79,10 @@ export function initializeApollo(initialState: NormalizedCacheObject | null = nu
   return _apolloClient;
 }
 
-export function addApolloState(
+export function addApolloState<T extends Record<string, unknown>>(
   client: ApolloClient<NormalizedCacheObject>,
-  pageProps: Record<string, unknown>
-) {
+  pageProps: T
+): T & { apolloState: NormalizedCacheObject } {
   return {
     ...pageProps,
     apolloState: client.cache.extract(),
@@ -56,3 +92,5 @@ export function addApolloState(
 export function useApollo(initialState: NormalizedCacheObject | null) {
   return useMemo(() => initializeApollo(initialState), [initialState]);
 }
+
+
