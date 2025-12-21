@@ -2,7 +2,6 @@ import React, { act } from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MockedProvider } from "@apollo/client/testing";
-import type { NormalizedCacheObject } from "@apollo/client";
 import IndexPage from "../index";
 import { ARTICLES_CONNECTION } from "@/graphql/queries";
 import { DELETE_ARTICLE } from "@/graphql/mutations";
